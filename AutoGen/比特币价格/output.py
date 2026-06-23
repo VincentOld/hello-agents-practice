@@ -34,9 +34,17 @@ with st.spinner('加载中...'):
 
 # 显示数据
 if current_price is not None:
-    st.metric(label="当前比特币价格 (USD)", value=f"${current_price}")
-
     if price_change_percentage is not None:
-        st.metric(label="24小时变化 (%)", value=f"{price_change_percentage:.2f}%")
+        # 由涨跌幅反推 24 小时前的价格，再算出涨跌额（USD 绝对值）
+        prev_price = current_price / (1 + price_change_percentage / 100)
+        change_amount = current_price - prev_price
+        # delta 传给 st.metric 后会自动“涨绿跌红”，并同时显示涨跌额和涨跌幅
+        st.metric(
+            label="当前比特币价格 (USD)",
+            value=f"${current_price:,.2f}",
+            delta=f"{change_amount:,.2f} USD ({price_change_percentage:.2f}%)",
+        )
+    else:
+        st.metric(label="当前比特币价格 (USD)", value=f"${current_price:,.2f}")
 else:
     st.error("无法获取数据，请稍后重试。")
